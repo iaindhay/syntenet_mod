@@ -148,44 +148,72 @@ check_gene_names <- function(seq = NULL, annotation = NULL,
 #' 
 #' # Create ID table
 #' create_species_id_table(names(proteomes))
+# create_species_id_table <- function(species_names) {
+    
+#     # Replace space with 'X'
+#     list_names <- gsub(" ", "X", species_names)
+    
+#     # Get the minimum number of characters possible
+#     for(n in seq(3, 6)) { 
+#         abbrev <- substr(list_names, 1, n)
+#         count <- table(abbrev)
+#         if (!any(count > 1)) break
+#     }
+    
+#     # Create a data frame of species IDs and names
+#     abbrev_df <- data.frame(
+#         species_id = abbrev,
+#         species_name = species_names
+#     )
+    
+#     # If there are duplicated names with 5 characters, append LETTER to the end
+#     if(n > 5) {
+#         abbrev <- substr(list_names, 1, 5)
+#         abbrev_df <- data.frame(
+#             species_name = species_names,
+#             species_id = abbrev,
+#             count = as.numeric(ave(
+#                 as.character(abbrev), abbrev, FUN = seq_along
+#             ))
+#         )
+#         abbrev_df$species_id <- ifelse(
+#             abbrev_df$count > 1, 
+#             paste0(substr(abbrev_df$species_id, 1, 4), LETTERS[abbrev_df$count]),
+#             abbrev_df$species_id
+#         )
+#         abbrev_df <- abbrev_df[, c("species_id", "species_name")]
+#     }
+    
+#     return(abbrev_df)
+# }
+
+#' new create_species_id_table script to generate a unique five-character alphanumeric species_id code
 create_species_id_table <- function(species_names) {
     
-    # Replace space with 'X'
-    list_names <- gsub(" ", "X", species_names)
-    
-    # Get the minimum number of characters possible
-    for(n in seq(3, 6)) { 
-        abbrev <- substr(list_names, 1, n)
-        count <- table(abbrev)
-        if (!any(count > 1)) break
+    # Generate a random unique five-character alphanumeric code
+    random_id <- function() {
+        paste0(sample(c(0:9, LETTERS), 5, replace = TRUE), collapse = "")
     }
     
     # Create a data frame of species IDs and names
     abbrev_df <- data.frame(
-        species_id = abbrev,
-        species_name = species_names
+        species_id = character(length(species_names)),
+        species_name = species_names,
+        stringsAsFactors = FALSE
     )
     
-    # If there are duplicated names with 5 characters, append LETTER to the end
-    if(n > 5) {
-        abbrev <- substr(list_names, 1, 5)
-        abbrev_df <- data.frame(
-            species_name = species_names,
-            species_id = abbrev,
-            count = as.numeric(ave(
-                as.character(abbrev), abbrev, FUN = seq_along
-            ))
-        )
-        abbrev_df$species_id <- ifelse(
-            abbrev_df$count > 1, 
-            paste0(substr(abbrev_df$species_id, 1, 4), LETTERS[abbrev_df$count]),
-            abbrev_df$species_id
-        )
-        abbrev_df <- abbrev_df[, c("species_id", "species_name")]
+    # Assign a random unique five-character code to each species name
+    for (i in seq_along(species_names)) {
+        id <- random_id()
+        while (id %in% abbrev_df$species_id) {
+            id <- random_id()
+        }
+        abbrev_df$species_id[i] <- id
     }
     
     return(abbrev_df)
 }
+
 
 #' Wrapper to check if command is found in PATH
 #'
